@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brainstorm: MonoTrue — Mobile Finance App</title>
+<style>
+  :root {
+    --bg: #0d1a0f;
+    --surface: #152018;
+    --surface2: #1c2b20;
+    --border: #2a3f2e;
+    --green: #4caf75;
+    --mint: #7fffb2;
+    --yellow: #ffd84d;
+    --red: #ff6b6b;
+    --blue: #64b5f6;
+    --text: #e8f5e9;
+    --muted: #7a9880;
+    --gap-color: #ff6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #1a3a2080 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: .75rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 span { color: var(--mint); }
+  .hero-sub {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 3rem;
+  }
+  .punch {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--yellow);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    max-width: 640px;
+    font-size: 1rem;
+    color: var(--text);
+    font-style: italic;
+  }
+  .punch strong { color: var(--yellow); font-style: normal; }
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: .8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+  /* ── SECTION CHROME ── */
+  .section {
+    padding: 5rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: .7rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin-bottom: .75rem;
+  }
+  .section h2 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    line-height: 1.2;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── GAP VISUALISER ── */
+  .gap-vis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media(max-width:640px){ .gap-vis { grid-template-columns: 1fr; } }
+  .balance-stack { display: flex; flex-direction: column; gap: .75rem; }
+  .balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 1rem;
+    border-radius: 10px;
+    background: var(--surface2);
+    font-size: .95rem;
+  }
+  .balance-row.total { border: 1px solid var(--green); }
+  .balance-row.tracked { border: 1px solid var(--blue); }
+  .balance-row.gap-row { border: 1px solid var(--gap-color); }
+  .balance-label { color: var(--muted); }
+  .balance-val { font-weight: 700; font-size: 1.1rem; }
+  .balance-val.green { color: var(--green); }
+  .balance-val.blue { color: var(--blue); }
+  .balance-val.red { color: var(--gap-color); }
+  .gap-bar-wrap { display: flex; flex-direction: column; gap: 1rem; justify-content: center; }
+  .gap-bar-label { font-size: .8rem; color: var(--muted); margin-bottom: .25rem; }
+  .gap-bar-track {
+    height: 36px;
+    background: var(--surface2);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .gap-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 .75rem;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  }
+  .gap-bar-fill.actual { background: linear-gradient(90deg, var(--green), #2e7d32); width: 100%; }
+  .gap-bar-fill.tracked { background: linear-gradient(90deg, var(--blue), #1565c0); }
+  .gap-bar-fill.gap-fill { background: linear-gradient(90deg, var(--gap-color), #b71c1c); }
+  .gap-note { font-size: .8rem; color: var(--muted); font-style: italic; margin-top: .5rem; }
+
+  /* ── TWO LAYER DIAGRAM ── */
+  .layers {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    margin: 2rem 0;
+  }
+  @media(max-width:600px){ .layers { grid-template-columns: 1fr; } .layer-arrow { transform: rotate(90deg); } }
+  .layer-box {
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .layer-box.l1 { background: #1a2a1a; border-color: #3a6040; }
+  .layer-box.l2 { background: #1a1a2a; border-color: #3a4060; }
+  .layer-title { font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; margin-bottom: .75rem; }
+  .layer-title.l1c { color: var(--green); }
+  .layer-title.l2c { color: var(--blue); }
+  .layer-items { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .layer-items li { font-size: .85rem; color: var(--muted); display: flex; align-items: center; gap: .5rem; }
+  .layer-items li::before { content: '›'; color: var(--mint); }
+  .layer-arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.5rem; }
+
+  /* ── ASSUMPTIONS ── */
+  .assumption-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .assumption-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .assumption-card::after {
+    content: '↙';
+    position: absolute;
+    right: 1rem;
+    top: .75rem;
+    font-size: 1.5rem;
+    color: var(--mint);
+    opacity: .4;
+  }
+  .assumption-orig { font-size: .8rem; color: var(--muted); text-decoration: line-through; margin-bottom: .6rem; }
+  .assumption-flip { font-size: .95rem; color: var(--text); font-weight: 500; }
+  .assumption-tag {
+    display: inline-block;
+    margin-top: .75rem;
+    font-size: .7rem;
+    padding: .2rem .6rem;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--mint);
+    border: 1px solid var(--border);
+  }
+
+  /* ── SCAMPER ── */
+  .scamper-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+  .scamper-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: transform .2s, border-color .2s;
+  }
+  .scamper-card:hover { transform: translateY(-4px); border-color: var(--mint); }
+  .scamper-letter {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--mint);
+    opacity: .2;
+    line-height: 1;
+    margin-bottom: .25rem;
+  }
+  .scamper-word { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--mint); margin-bottom: .75rem; }
+  .scamper-idea { font-size: .9rem; color: var(--text); }
+
+  /* ── STARBURSTING ── */
+  .starburst-wrap { position: relative; width: 100%; }
+  .starburst-center {
+    background: var(--surface);
+    border: 2px solid var(--mint);
+    border-radius: 50%;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto 3rem;
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--mint);
+    padding: 1rem;
+    box-shadow: 0 0 40px #4caf7530;
+  }
+  .starburst-rays {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  @media(min-width:700px){ .starburst-rays { grid-template-columns: repeat(3, 1fr); } }
+  .ray-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-top: 3px solid;
+  }
+  .ray-card:nth-child(1) { border-top-color: #f06292; }
+  .ray-card:nth-child(2) { border-top-color: #ffb74d; }
+  .ray-card:nth-child(3) { border-top-color: #4dd0e1; }
+  .ray-card:nth-child(4) { border-top-color: #aed581; }
+  .ray-card:nth-child(5) { border-top-color: #ce93d8; }
+  .ray-card:nth-child(6) { border-top-color: var(--yellow); }
+  .ray-q { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+  .ray-a { font-size: .9rem; color: var(--text); }
+
+  /* ── INBOX MOCKUP ── */
+  .inbox-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .phone-frame {
+    width: 280px;
+    background: #111;
+    border-radius: 36px;
+    border: 2px solid #333;
+    padding: 2rem 1rem;
+    box-shadow: 0 20px 60px #00000080;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-screen-top {
+    background: #1a2e1c;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: .75rem;
+  }
+  .phone-balance-title { font-size: .6rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .25rem; }
+  .phone-actual { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+  .phone-sub-row { display: flex; justify-content: space-between; margin-top: .5rem; }
+  .phone-sub-item { font-size: .65rem; color: var(--muted); }
+  .phone-sub-val { font-size: .65rem; font-weight: 600; }
+  .phone-gap-strip {
+    background: #2a1515;
+    border: 1px solid #5a2020;
+    border-radius: 8px;
+    padding: .6rem .75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .75rem;
+    cursor: pointer;
+  }
+  .phone-gap-text { font-size: .65rem; color: #ff9090; }
+  .phone-gap-badge {
+    background: var(--gap-color);
+    color: white;
+    border-radius: 20px;
+    font-size: .6rem;
+    font-weight: 700;
+    padding: .15rem .5rem;
+  }
+  .inbox-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .75rem;
+    position: relative;
+    cursor: pointer;
+    transition: transform .3s, opacity .3s;
+    user-select: none;
+  }
+  .inbox-card.swiped-right { transform: translateX(120%); opacity: 0; }
+  .inbox-card.swiped-left  { transform: translateX(-120%); opacity: 0; }
+  .inbox-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .35rem; }
+  .inbox-merchant { font-size: .75rem; font-weight: 600; color: var(--text); }
+  .inbox-amount { font-size: .8rem; font-weight: 700; color: var(--red); }
+  .inbox-meta { display: flex; gap: .4rem; align-items: center; }
+  .inbox-mcc { font-size: .55rem; background: #2a2a1a; color: var(--yellow); border-radius: 4px; padding: .1rem .3rem; }
+  .inbox-desc { font-size: .6rem; color: var(--muted); }
+  .inbox-suggest {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .4rem;
+    background: #1a2a1a;
+    border-radius: 6px;
+    padding: .3rem .5rem;
+    font-size: .6rem;
+    color: var(--mint);
+  }
+  .swipe-hints {
+    display: flex;
+    justify-content: space-between;
+    width: 280px;
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .swipe-hints span { display: flex; align-items: center; gap: .3rem; }
+  .swipe-hint-ignore { color: var(--red); }
+  .swipe-hint-track  { color: var(--green); }
+  .swipe-btns { display: flex; gap: .75rem; }
+  .swipe-btn {
+    padding: .5rem 1.25rem;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: transform .15s;
+  }
+  .swipe-btn:hover { transform: scale(1.05); }
+  .swipe-btn.ignore { background: #3a1515; color: var(--red); }
+  .swipe-btn.track  { background: #153a1a; color: var(--mint); }
+
+  /* ── MOSCOW ── */
+  .moscow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+  .moscow-col { border-radius: 14px; padding: 1.5rem; border: 1px solid var(--border); }
+  .moscow-col.must    { background: #1a2a1a; border-top: 3px solid var(--green); }
+  .moscow-col.should  { background: #1a1a2a; border-top: 3px solid var(--blue); }
+  .moscow-col.could   { background: #2a2a1a; border-top: 3px solid var(--yellow); }
+  .moscow-col.wont    { background: #2a1a1a; border-top: 3px solid var(--red); }
+  .moscow-title { font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; margin-bottom: 1rem; font-weight: 700; }
+  .moscow-col.must   .moscow-title { color: var(--green); }
+  .moscow-col.should .moscow-title { color: var(--blue); }
+  .moscow-col.could  .moscow-title { color: var(--yellow); }
+  .moscow-col.wont   .moscow-title { color: var(--red); }
+  .moscow-items { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .moscow-items li { font-size: .82rem; color: var(--muted); display: flex; gap: .4rem; align-items: flex-start; }
+  .moscow-items li::before { content: '–'; opacity: .4; flex-shrink: 0; }
+
+  /* ── SYNTHESIS ── */
+  .synthesis-connections { display: flex; flex-direction: column; gap: 1.25rem; counter-reset: conn; }
+  .connection {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    counter-increment: conn;
+  }
+  .connection-num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--mint);
+    opacity: .15;
+    line-height: 1;
+  }
+  .connection-text { font-size: .95rem; color: var(--text); }
+  .connection-text strong { color: var(--mint); }
+
+  /* ── VALUE PROP FINALE ── */
+  .finale {
+    background: linear-gradient(135deg, #1a3a20 0%, #0d1a0f 100%);
+    border-top: 1px solid var(--border);
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+  .finale-label { font-size: .7rem; letter-spacing: .25em; text-transform: uppercase; color: var(--mint); margin-bottom: 1.5rem; }
+  .finale-quote {
+    font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    line-height: 1.4;
+  }
+  .finale-quote em { color: var(--gap-color); font-style: normal; }
+  .finale-quote strong { color: var(--mint); }
+  .meta { font-size: .75rem; color: var(--muted); margin-top: 4rem; }
+</style>
+</head>
+<body>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <p class="hero-eyebrow">Brainstorming Session · 2026-07-04</p>
+  <h1>Mono<span>True</span></h1>
+  <p class="hero-sub">A mobile finance app that tracks what you actually spent — not what the bank recorded.</p>
+  <div class="punch">
+    I paid <strong>1 000 ₴</strong> for a group lunch. Monobank shows it as food expense. Colleagues returned <strong>800 ₴</strong>. Monobank shows it as income. <strong>Both are lies.</strong> This app lets you record the truth: you spent 200.
+  </div>
+  <div class="scroll-hint">
+    <span>↓</span>
+    <span>scroll</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── CORE MODEL: THE GAP ─── -->
+<section class="section">
+  <p class="section-label">Core Model</p>
+  <h2>Two Totals. One Gap.</h2>
+
+  <div class="gap-vis">
+    <div class="balance-stack">
+      <div class="balance-row">
+        <span class="balance-label">🏦 Bank (Monobank live)</span>
+        <span class="balance-val green">12 400 ₴</span>
+      </div>
+      <div class="balance-row">
+        <span class="balance-label">💵 Cash (you control)</span>
+        <span class="balance-val green">350 ₴</span>
+      </div>
+      <div class="balance-row total">
+        <span class="balance-label">Actual Total</span>
+        <span class="balance-val green">12 750 ₴</span>
+      </div>
+      <div class="balance-row tracked">
+        <span class="balance-label">Tracked Total</span>
+        <span class="balance-val blue">9 200 ₴</span>
+      </div>
+      <div class="balance-row gap-row">
+        <span class="balance-label">Gap ← 4 transactions pending</span>
+        <span class="balance-val red">3 550 ₴</span>
+      </div>
+    </div>
+    <div class="gap-bar-wrap">
+      <div>
+        <div class="gap-bar-label">Actual Total</div>
+        <div class="gap-bar-track"><div class="gap-bar-fill actual">12 750 ₴</div></div>
+      </div>
+      <div>
+        <div class="gap-bar-label">Tracked Total</div>
+        <div class="gap-bar-track"><div class="gap-bar-fill tracked" style="width:72%">9 200 ₴</div></div>
+      </div>
+      <div>
+        <div class="gap-bar-label">Gap (unaccounted)</div>
+        <div class="gap-bar-track"><div class="gap-bar-fill gap-fill" style="width:28%">3 550 ₴</div></div>
+      </div>
+      <p class="gap-note">Cash has no gap — you control every entry. The gap lives on the bank side only.</p>
+    </div>
+  </div>
+
+  <div class="layers" style="margin-top:2.5rem">
+    <div class="layer-box l1">
+      <div class="layer-title l1c">Layer 1 — Monobank Truth</div>
+      <ul class="layer-items">
+        <li>Every statement, verbatim</li>
+        <li>Drives live bank balance</li>
+        <li>Never modified by user</li>
+        <li>Always accessible</li>
+        <li>Processed / unprocessed / ignored</li>
+      </ul>
+    </div>
+    <div class="layer-arrow">→</div>
+    <div class="layer-box l2">
+      <div class="layer-title l2c">Layer 2 — User Truth</div>
+      <ul class="layer-items">
+        <li>User-curated transactions</li>
+        <li>Drives analytics &amp; charts</li>
+        <li>Amount corrected (e.g. 1000→200)</li>
+        <li>App category assigned</li>
+        <li>Fully editable, full CRUD</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── ASSUMPTION REVERSAL ─── -->
+<section class="section">
+  <p class="section-label">Technique 1 · Assumption Reversal</p>
+  <h2>Every assumption flipped.</h2>
+
+  <div class="assumption-grid">
+    <div class="assumption-card">
+      <div class="assumption-orig">Category mapping is done transaction by transaction</div>
+      <div class="assumption-flip">MCC codes seed the first suggestion. Every override trains the engine. ATB can be Food or Car — the app learns.</div>
+      <span class="assumption-tag">suggestion engine</span>
+    </div>
+    <div class="assumption-card">
+      <div class="assumption-orig">Monobank is the only account</div>
+      <div class="assumption-flip">Two account types: Bank (auto-synced) + Cash (manual). Total = bank + cash. ATM withdrawal = transfer between them.</div>
+      <span class="assumption-tag">account model</span>
+    </div>
+    <div class="assumption-card">
+      <div class="assumption-orig">In-app total = cash + bank sum</div>
+      <div class="assumption-flip">App Total = all tracked income − tracked expenses. Actual Total = bank + cash. Gap = Actual − App. User manages the gap.</div>
+      <span class="assumption-tag">gap concept</span>
+    </div>
+    <div class="assumption-card">
+      <div class="assumption-orig">Bank sync failures mean manual entry</div>
+      <div class="assumption-flip">Manual entry is first-class always — not a fallback. Both bank and cash transactions matter equally.</div>
+      <span class="assumption-tag">manual entry</span>
+    </div>
+    <div class="assumption-card">
+      <div class="assumption-orig">Ignored transactions are gone forever</div>
+      <div class="assumption-flip">Raw Monobank transactions are always stored and accessible. Ignored = excluded from analytics, not deleted.</div>
+      <span class="assumption-tag">data model</span>
+    </div>
+    <div class="assumption-card">
+      <div class="assumption-orig">The phone is the app</div>
+      <div class="assumption-flip">Phone is a thin client only. All logic and data live on the existing .NET backend + MongoDB + Redis.</div>
+      <span class="assumption-tag">architecture</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── SCAMPER ─── -->
+<section class="section">
+  <p class="section-label">Technique 2 · SCAMPER</p>
+  <h2>Seven lenses on the reference app.</h2>
+
+  <div class="scamper-grid">
+    <div class="scamper-card">
+      <div class="scamper-letter">S</div>
+      <div class="scamper-word">Substitute</div>
+      <div class="scamper-idea">Swap the heavy preset category library for minimal defaults + categories that grow from actual use. What you haven't used doesn't clutter the screen.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">C</div>
+      <div class="scamper-word">Combine</div>
+      <div class="scamper-idea">Merge the triage inbox into the home screen as a collapsible strip below the balances. Gap number and inbox are visually adjacent — one motivates the other.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">A</div>
+      <div class="scamper-word">Adapt</div>
+      <div class="scamper-idea">Borrow the banking app idiom: transaction detail shows raw Monobank data (merchant, MCC, timestamp) alongside the user's interpretation (category, corrected amount). Source and truth, side by side.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">M</div>
+      <div class="scamper-word">Modify</div>
+      <div class="scamper-idea">The donut chart gets a second ring. Outer = tracked spending by category. Inner = the gap. The gap visually shrinks as you clear the inbox — a live progress ring.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">P</div>
+      <div class="scamper-word">Put to other use</div>
+      <div class="scamper-idea">Manual entry form goes tap-only — only the amount is typed. Category, date, account: all tapped from pickers. Speed and consistency over flexibility.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">E</div>
+      <div class="scamper-word">Eliminate</div>
+      <div class="scamper-idea">Cut for MVP: recurring payments, reminders, photo attachments, tags, long comments, share/rate/support, in-app purchases. Ship lean, earn trust.</div>
+    </div>
+    <div class="scamper-card">
+      <div class="scamper-letter">R</div>
+      <div class="scamper-word">Reverse</div>
+      <div class="scamper-idea">Instead of user visiting app to check finances: the app delivers a weekly digest — spending summary, top category, unprocessed count — as a push notification. Finance finds you.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── INBOX DEMO ─── -->
+<section class="section">
+  <p class="section-label">Core Interaction</p>
+  <h2>The inbox is the product.</h2>
+  <p style="color:var(--muted);max-width:540px;margin-bottom:2.5rem;font-size:.95rem;">Every swipe is a truth decision. Swipe right to track (confirm or edit the suggested category and amount). Swipe left to ignore. The primary failure mode to design against: backlog + notification fatigue.</p>
+
+  <div class="inbox-scene">
+    <div class="phone-frame">
+      <div class="phone-screen-top">
+        <div class="phone-balance-title">Actual Total</div>
+        <div class="phone-actual">12 750 ₴</div>
+        <div class="phone-sub-row">
+          <div>
+            <div class="phone-sub-item">Bank</div>
+            <div class="phone-sub-val" style="color:var(--green)">12 400 ₴</div>
+          </div>
+          <div>
+            <div class="phone-sub-item">Cash</div>
+            <div class="phone-sub-val" style="color:var(--green)">350 ₴</div>
+          </div>
+          <div>
+            <div class="phone-sub-item">Tracked</div>
+            <div class="phone-sub-val" style="color:var(--blue)">9 200 ₴</div>
+          </div>
+          <div>
+            <div class="phone-sub-item">Gap</div>
+            <div class="phone-sub-val" style="color:var(--red)">3 550 ₴</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-gap-strip" id="inboxStrip">
+        <span class="phone-gap-text">4 transactions waiting</span>
+        <span class="phone-gap-badge">4</span>
+      </div>
+      <div class="inbox-card" id="inboxCard">
+        <div class="inbox-card-top">
+          <div class="inbox-merchant">АТБ Маркет</div>
+          <div class="inbox-amount">−1 000 ₴</div>
+        </div>
+        <div class="inbox-meta">
+          <span class="inbox-mcc">MCC 5411</span>
+          <span class="inbox-desc">Supermarket · 13:42 today</span>
+        </div>
+        <div class="inbox-suggest">✦ Suggested: <strong>Food</strong> · tap to change or edit amount</div>
+      </div>
+    </div>
+
+    <div class="swipe-hints">
+      <span class="swipe-hint-ignore">← ignore</span>
+      <span class="swipe-hint-track">track →</span>
+    </div>
+
+    <div class="swipe-btns">
+      <button class="swipe-btn ignore" onclick="swipeCard('left')">← Ignore</button>
+      <button class="swipe-btn track"  onclick="swipeCard('right')">Track →</button>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── STARBURSTING ─── -->
+<section class="section">
+  <p class="section-label">Technique 3 · Starbursting</p>
+  <h2>Six questions that shaped the app.</h2>
+
+  <div class="starburst-wrap">
+    <div class="starburst-center">Mobile Money<br>Tracking App<br>+ Monobank</div>
+    <div class="starburst-rays">
+      <div class="ray-card">
+        <div class="ray-q">WHO</div>
+        <div class="ray-a">Not just personal — a multi-user product. ~5 beta testers, ~100 users month one. Each user has fully isolated data and their own Monobank token.</div>
+      </div>
+      <div class="ray-card">
+        <div class="ray-q">WHAT</div>
+        <div class="ray-a">The aha moment: connect Monobank → see real balance + transactions in inbox. Charts are earned through processing — not faked on day one.</div>
+      </div>
+      <div class="ray-card">
+        <div class="ray-q">WHERE</div>
+        <div class="ray-a">Monobank connect happens during registration — already in the existing web app flow. The mobile app reuses the same backend.</div>
+      </div>
+      <div class="ray-card">
+        <div class="ray-q">WHEN</div>
+        <div class="ray-a">The app breaks when the inbox backlogs and notifications become noise. The swipe model is the direct defense — two interactions for the happy path.</div>
+      </div>
+      <div class="ray-card">
+        <div class="ray-q">WHY</div>
+        <div class="ray-a">Monobank tracks bank activity. This app tracks financial truth. A 1 000 ₴ group lunch where colleagues return 800 ₴ should show as 200 ₴ food expense.</div>
+      </div>
+      <div class="ray-card">
+        <div class="ray-q">HOW</div>
+        <div class="ray-a">Full CRUD on every transaction. Nothing is locked after processing. Go back, fix the amount, change the category — any time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── MOSCOW ─── -->
+<section class="section">
+  <p class="section-label">Scope</p>
+  <h2>What ships. What waits.</h2>
+
+  <div class="moscow-grid">
+    <div class="moscow-col must">
+      <div class="moscow-title">Must Have</div>
+      <ul class="moscow-items">
+        <li>Two-layer data model (raw + curated)</li>
+        <li>Home screen: balances + gap + inbox strip</li>
+        <li>Swipe-based inbox (track / ignore / edit)</li>
+        <li>Full CRUD on transactions</li>
+        <li>Category system with CRUD</li>
+        <li>Onboarding + analytics start date</li>
+        <li>Bank + cash account types</li>
+        <li>Transaction detail (raw vs user view)</li>
+        <li>Basic settings + PIN lock</li>
+      </ul>
+    </div>
+    <div class="moscow-col should">
+      <div class="moscow-title">Should Have</div>
+      <ul class="moscow-items">
+        <li>Category suggestion engine (MCC + history)</li>
+        <li>Two-ring donut chart</li>
+        <li>Smart inbox-nudge notifications</li>
+        <li>ATM withdrawal → transfer detection</li>
+        <li>Full analytics screen (bar charts, time filters)</li>
+      </ul>
+    </div>
+    <div class="moscow-col could">
+      <div class="moscow-title">Could Have</div>
+      <ul class="moscow-items">
+        <li>Weekly digest push notification</li>
+        <li>Multiple Monobank jars / multi-card</li>
+        <li>Data import (migration from reference app)</li>
+      </ul>
+    </div>
+    <div class="moscow-col wont">
+      <div class="moscow-title">Won't Have (MVP)</div>
+      <ul class="moscow-items">
+        <li>Recurring payments</li>
+        <li>Reminders</li>
+        <li>Photo attachments</li>
+        <li>Tags</li>
+        <li>Share / rate / support links</li>
+        <li>In-app purchases</li>
+        <li>Auto-categorization on first sync</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ─── SYNTHESIS ─── -->
+<section class="section">
+  <p class="section-label">Synthesis</p>
+  <h2>The connections that matter.</h2>
+
+  <div class="synthesis-connections">
+    <div class="connection">
+      <div class="connection-num">1</div>
+      <div class="connection-text"><strong>The inbox IS the truth-making machine — not a chore, it's the product.</strong> The value proposition (financial truth vs bank activity) and the swipe inbox are the same idea expressed two ways. Every swipe is a truth decision: "did I really spend 1 000 ₴, or was it 200?" The inbox is the reason the charts mean something.</div>
+    </div>
+    <div class="connection">
+      <div class="connection-num">2</div>
+      <div class="connection-text"><strong>The failure mode and the swipe UX are mirror images.</strong> Inbox backlog + notification fatigue = the app becomes useless. Swipe right with pre-filled suggestion + one tap to confirm = the direct defense. One is the problem, one is the fix.</div>
+    </div>
+    <div class="connection">
+      <div class="connection-num">3</div>
+      <div class="connection-text"><strong>The two-ring donut and the gap number are the same idea in two forms.</strong> The gap on the home screen is a number. The inner ring on the donut is that gap, made visual. Together they make the unprocessed state impossible to ignore — everywhere, without being annoying.</div>
+    </div>
+    <div class="connection">
+      <div class="connection-num">4</div>
+      <div class="connection-text"><strong>Analytics start date and data import are two sides of one migration story.</strong> "How do I get my history in?" — bank history via analytics start date, manual history via import. Two mechanisms, one user problem.</div>
+    </div>
+    <div class="connection">
+      <div class="connection-num">5</div>
+      <div class="connection-text"><strong>The whole app respects user agency over automation.</strong> No auto-categorization. Smart suggestions, not rules. Batched notifications, not per-transaction. Editable everything. A consistent philosophy: the app helps you understand your money — it doesn't categorize it for you.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINALE ─── -->
+<section class="finale">
+  <div class="finale-label">Value Proposition</div>
+  <p class="finale-quote">
+    Monobank tracks <em>what the bank recorded.</em><br>
+    This app tracks <strong>what actually happened.</strong>
+  </p>
+  <p class="meta">Brainstorming session · 2026-07-04 · Money Manager project · 3 techniques · 47 log entries</p>
+</section>
+
+<script>
+  const cards = [
+    { merchant: 'АТБ Маркет', amount: '−1 000 ₴', mcc: 'MCC 5411', desc: 'Supermarket · 13:42 today', suggest: 'Food' },
+    { merchant: 'Shell Паливо',  amount: '−850 ₴',   mcc: 'MCC 5541', desc: 'Gas station · 11:15 today',  suggest: 'Fuel' },
+    { merchant: 'Rozetka',       amount: '−2 400 ₴',  mcc: 'MCC 5734', desc: 'Electronics · yesterday',    suggest: 'Tech' },
+    { merchant: 'ATM Приват',    amount: '−1 000 ₴',  mcc: 'MCC 6011', desc: 'Cash withdrawal · Monday',   suggest: '⟳ Transfer → Cash' },
+  ];
+  let idx = 0;
+
+  function updateCard() {
+    const c = cards[idx % cards.length];
+    document.querySelector('.inbox-merchant').textContent = c.merchant;
+    document.querySelector('.inbox-amount').textContent   = c.amount;
+    document.querySelector('.inbox-mcc').textContent      = c.mcc;
+    document.querySelector('.inbox-desc').textContent     = c.desc;
+    document.querySelector('.inbox-suggest').innerHTML    = `✦ Suggested: <strong>${c.suggest}</strong> · tap to change or edit amount`;
+    const badge = document.querySelector('.phone-gap-badge');
+    const remaining = cards.length - (idx % cards.length);
+    badge.textContent = remaining;
+    document.querySelector('.phone-gap-text').textContent = `${remaining} transaction${remaining !== 1 ? 's' : ''} waiting`;
+  }
+
+  function swipeCard(dir) {
+    const card = document.getElementById('inboxCard');
+    card.classList.add(dir === 'right' ? 'swiped-right' : 'swiped-left');
+    setTimeout(() => {
+      idx++;
+      updateCard();
+      card.classList.remove('swiped-right', 'swiped-left');
+    }, 350);
+  }
+
+  // Animate gap bars on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.gap-bar-fill').forEach(b => {
+          b.style.transition = 'width 1.2s cubic-bezier(.4,0,.2,1)';
+        });
+      }
+    });
+  }, { threshold: .3 });
+  document.querySelectorAll('.gap-vis').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
